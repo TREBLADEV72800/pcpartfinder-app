@@ -1,0 +1,349 @@
+// server/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════
+// COMPONENTI
+// ═══════════════════════════════════════════
+
+model Component {
+  id              String              @id @default(cuid())
+  pcppId          String?             @unique @map("pcpp_id")
+  pcppUrl         String?             @map("pcpp_url")
+  name            String
+  brand           String
+  model           String?
+  partNumber      String?             @map("part_number")
+  category        ComponentCategory
+  releaseYear     Int?                @map("release_year")
+  imageUrl        String?             @map("image_url")
+  thumbnailUrl    String?             @map("thumbnail_url")
+
+  // JSON flessibile per specs specifiche per categoria
+  specs           Json                @default("{}")
+
+  // Campi estratti da specs per query SQL veloci
+  socket          String?
+  formFactor      String?             @map("form_factor")
+  chipset         String?
+  memoryType      String?             @map("memory_type")
+  tdp             Int?
+  wattage         Int?
+  lengthMm        Float?              @map("length_mm")
+  heightMm        Float?              @map("height_mm")
+  radiatorMm      Int?                @map("radiator_mm")
+  capacityGb      Float?              @map("capacity_gb")
+  interfaceType   String?             @map("interface_type")
+
+  isActive        Boolean             @default(true) @map("is_active")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  prices          Price[]
+  priceHistory    PriceHistory[]
+  reviews         Review[]
+  buildItems      BuildItem[]
+
+  @@index([category])
+  @@index([category, releaseYear])
+  @@index([category, isActive, releaseYear])
+  @@index([brand])
+  @@index([socket])
+  @@index([formFactor])
+  @@index([memoryType])
+  @@index([name])
+  @@map("components")
+}
+
+enum ComponentCategory {
+  CPU
+  CPU_COOLER
+  MOTHERBOARD
+  MEMORY
+  STORAGE
+  VIDEO_CARD
+  CASE
+  POWER_SUPPLY
+  MONITOR
+  OS
+  CASE_FAN
+  THERMAL_PASTE
+}
+
+// ═══════════════════════════════════════════
+// PREZZI
+// ═══════════════════════════════════════════
+
+model Price {
+  id              String              @id @default(cuid())
+  componentId     String              @map("component_id")
+  component       Component           @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  retailer        String
+  price           Float
+  basePrice       Float?              @map("base_price")
+  shipping        Float?
+  tax             Float?
+  total           Float?
+  currency        String              @default("USD")
+  url             String
+  inStock         Boolean             @default(true) @map("in_stock")
+  scrapedAt       DateTime            @default(now()) @map("scraped_at")
+
+  @@unique([componentId, retailer])
+  @@index([componentId])
+  @@index([retailer])
+  @@index([price])
+  @@map("prices")
+}
+
+model PriceHistory {
+  id              String              @id @default(cuid())
+  componentId     String              @map("component_id")
+  component       Component           @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  retailer        String
+  price           Float
+  currency        String              @default("USD")
+  recordedAt      DateTime            @default(now()) @map("recorded_at")
+
+  @@index([componentId, recordedAt])
+  @@index([componentId, retailer, recordedAt])
+  @@map("price_history")
+}
+
+model PriceAlert {
+  id              String              @id @default(cuid())
+  userId          String              @map("user_id")
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  componentId     String              @map("component_id")
+  targetPrice     Float               @map("target_price")
+  currency        String              @default("USD")
+  isActive        Boolean             @default(true) @map("is_active")
+  triggeredAt     DateTime?           @map("triggered_at")
+  createdAt       DateTime            @default(now()) @map("created_at")
+
+  @@map("price_alerts")
+}
+
+// ═══════════════════════════════════════════
+// BUILD
+// ═══════════════════════════════════════════
+
+model Build {
+  id              String              @id @default(cuid())
+  shareId         String              @unique @default(cuid()) @map("share_id")
+  userId          String?             @map("user_id")
+  user            User?               @relation(fields: [userId], references: [id])
+  name            String              @default("Untitled Build")
+  description     String?
+  useCase         BuildUseCase?       @map("use_case")
+  isPublic        Boolean             @default(false) @map("is_public")
+  totalPrice      Float?              @map("total_price")
+  totalWattage    Int?                @map("total_wattage")
+  viewsCount      Int                 @default(0) @map("views_count")
+  likesCount      Int                 @default(0) @map("likes_count")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  items           BuildItem[]
+  compatibility   CompatibilityResult[]
+  chatSessions    ChatSession[]
+
+  @@index([userId])
+  @@index([isPublic, createdAt])
+  @@index([shareId])
+  @@map("builds")
+}
+
+enum BuildUseCase {
+  GAMING
+  WORKSTATION
+  STREAMING
+  OFFICE
+  HOME_SERVER
+  HTPC
+  BUDGET
+  CUSTOM
+}
+
+model BuildItem {
+  id              String              @id @default(cuid())
+  buildId         String              @map("build_id")
+  build           Build               @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  componentId     String              @map("component_id")
+  component       Component           @relation(fields: [componentId], references: [id])
+  categorySlot    ComponentCategory   @map("category_slot")
+  quantity        Int                 @default(1)
+  customPrice     Float?              @map("custom_price")
+  notes           String?
+
+  @@unique([buildId, categorySlot, componentId])
+  @@index([buildId])
+  @@map("build_items")
+}
+
+// ═══════════════════════════════════════════
+// COMPATIBILITÀ
+// ═══════════════════════════════════════════
+
+model CompatibilityResult {
+  id              String              @id @default(cuid())
+  buildId         String              @map("build_id")
+  build           Build               @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  ruleId          String              @map("rule_id")
+  rule            CompatibilityRule   @relation(fields: [ruleId], references: [id])
+  status          CompatStatus
+  message         String
+  details         Json?
+  checkedAt       DateTime            @default(now()) @map("checked_at")
+
+  @@index([buildId])
+  @@map("compatibility_results")
+}
+
+enum CompatStatus {
+  OK
+  WARNING
+  ERROR
+  INFO
+}
+
+model CompatibilityRule {
+  id              String              @id @default(cuid())
+  name            String              @unique
+  description     String
+  categoryA       ComponentCategory   @map("category_a")
+  categoryB       ComponentCategory   @map("category_b")
+  ruleType        String              @map("rule_type")
+  severity        CompatStatus        @default(ERROR)
+  ruleLogic       Json                @map("rule_logic")
+  isActive        Boolean             @default(true) @map("is_active")
+
+  results         CompatibilityResult[]
+
+  @@map("compatibility_rules")
+}
+
+// ═══════════════════════════════════════════
+// UTENTI
+// ═══════════════════════════════════════════
+
+model User {
+  id              String              @id @default(cuid())
+  email           String              @unique
+  username        String              @unique
+  passwordHash    String              @map("password_hash")
+  avatarUrl       String?             @map("avatar_url")
+  bio             String?
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  builds          Build[]
+  chatSessions    ChatSession[]
+  priceAlerts     PriceAlert[]
+  reviews         Review[]
+
+  @@map("users")
+}
+
+// ═══════════════════════════════════════════
+// REVIEW
+// ═══════════════════════════════════════════
+
+model Review {
+  id              String              @id @default(cuid())
+  componentId     String              @map("component_id")
+  component       Component           @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  userId          String?             @map("user_id")
+  user            User?               @relation(fields: [userId], references: [id])
+  rating          Float
+  title           String?
+  content         String?
+  authorName      String?             @map("author_name")
+  source          ReviewSource        @default(PCPARTPICKER)
+  createdAt       DateTime            @default(now()) @map("created_at")
+
+  @@index([componentId])
+  @@index([componentId, rating])
+  @@map("reviews")
+}
+
+enum ReviewSource {
+  PCPARTPICKER
+  USER
+  IMPORTED
+}
+
+// ═══════════════════════════════════════════
+// AI CHAT
+// ═══════════════════════════════════════════
+
+model ChatSession {
+  id              String              @id @default(cuid())
+  userId          String?             @map("user_id")
+  user            User?               @relation(fields: [userId], references: [id])
+  buildId         String?             @map("build_id")
+  build           Build?              @relation(fields: [buildId], references: [id])
+  modelUsed       String              @default("default") @map("model_used")
+  totalTokens     Int                 @default(0) @map("total_tokens")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  messages        ChatMessage[]
+
+  @@index([userId])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id              String              @id @default(cuid())
+  sessionId       String              @map("session_id")
+  session         ChatSession         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role            ChatRole
+  content         String
+  tokensInput     Int?                @map("tokens_input")
+  tokensOutput    Int?                @map("tokens_output")
+  createdAt       DateTime            @default(now()) @map("created_at")
+
+  @@map("chat_messages")
+}
+
+enum ChatRole {
+  SYSTEM
+  USER
+  ASSISTANT
+}
+
+// ═══════════════════════════════════════════
+// SCRAPER LOG
+// ═══════════════════════════════════════════
+
+model ScrapeLog {
+  id              String              @id @default(cuid())
+  category        ComponentCategory?
+  region          String              @default("us")
+  status          ScrapeStatus
+  itemsScraped    Int                 @default(0) @map("items_scraped")
+  itemsUpdated    Int                 @default(0) @map("items_updated")
+  itemsNew        Int                 @default(0) @map("items_new")
+  errorsCount     Int                 @default(0) @map("errors_count")
+  errorDetails    Json?               @map("error_details")
+  durationMs      Int?                @map("duration_ms")
+  startedAt       DateTime            @default(now()) @map("started_at")
+  finishedAt      DateTime?           @map("finished_at")
+
+  @@map("scrape_logs")
+}
+
+enum ScrapeStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  PARTIAL
+}
