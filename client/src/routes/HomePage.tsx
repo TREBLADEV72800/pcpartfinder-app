@@ -1,5 +1,21 @@
 import { Link } from "react-router-dom";
-import { Cpu, HardDrive, Monitor, Zap, Users, TrendingDown } from "lucide-react";
+import { Cpu, HardDrive, Monitor, Fan, Box, Zap, Server, Disc, Wind, Droplet, TrendingDown, Users, ArrowRight } from "lucide-react";
+import { CATEGORIES, type CategoryMetadata } from "@shared";
+
+const CATEGORY_ICONS: Record<string, React.ReactElement> = {
+  CPU: <Cpu className="h-8 w-8" />,
+  CPU_COOLER: <Fan className="h-8 w-8" />,
+  MOTHERBOARD: <Server className="h-8 w-8" />,
+  MEMORY: <HardDrive className="h-8 w-8" />,
+  STORAGE: <HardDrive className="h-8 w-8" />,
+  VIDEO_CARD: <Monitor className="h-8 w-8" />,
+  CASE: <Box className="h-8 w-8" />,
+  POWER_SUPPLY: <Zap className="h-8 w-8" />,
+  MONITOR: <Monitor className="h-8 w-8" />,
+  OS: <Disc className="h-8 w-8" />,
+  CASE_FAN: <Wind className="h-8 w-8" />,
+  THERMAL_PASTE: <Droplet className="h-8 w-8" />,
+};
 
 export default function HomePage() {
   return (
@@ -53,6 +69,7 @@ export default function HomePage() {
               icon={<HardDrive className="h-8 w-8" />}
               title="Database Completo"
               description="Migliaia di componenti con prezzi aggiornati da più rivenditori."
+              link="/products/CPU"
             />
             <FeatureCard
               icon={<TrendingDown className="h-8 w-8" />}
@@ -76,8 +93,38 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Category Browse */}
+      <section className="py-16 bg-muted/30">
+        <div className="container px-4">
+          <h2 className="text-3xl font-bold text-center mb-8">
+            Esplora per Categoria
+          </h2>
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Object.values(CATEGORIES).map((cat: CategoryMetadata) => (
+              <Link
+                key={cat.slug}
+                to={`/products/${cat.slug.toUpperCase()}`}
+                className="group p-6 border border-border rounded-lg bg-card hover:bg-accent hover:shadow-lg transition-all"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-lg text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    {CATEGORY_ICONS[cat.slug] || <Cpu className="h-6 w-6" />}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{cat.name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {cat.description}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
-      <section className="border-t border-border bg-card py-16">
+      <section className="py-16">
         <div className="container px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
             Pronto a iniziare?
@@ -88,9 +135,10 @@ export default function HomePage() {
           </p>
           <Link
             to="/builder"
-            className="inline-flex items-center px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
           >
             Vai al System Builder
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </section>
@@ -118,7 +166,7 @@ function FeatureCard({ icon, title, description, link }: FeatureCardProps) {
     return (
       <Link
         to={link}
-        className="p-6 border border-border rounded-lg hover:bg-accent transition-colors"
+        className="block p-6 border border-border rounded-lg hover:bg-accent transition-colors"
       >
         {content}
       </Link>

@@ -1,17 +1,19 @@
-export enum ComponentCategory {
-  CPU = "CPU",
-  CPU_COOLER = "CPU_COOLER",
-  MOTHERBOARD = "MOTHERBOARD",
-  MEMORY = "MEMORY",
-  STORAGE = "STORAGE",
-  VIDEO_CARD = "VIDEO_CARD",
-  CASE = "CASE",
-  POWER_SUPPLY = "POWER_SUPPLY",
-  MONITOR = "MONITOR",
-  OS = "OS",
-  CASE_FAN = "CASE_FAN",
-  THERMAL_PASTE = "THERMAL_PASTE",
-}
+export const ComponentCategory = {
+  CPU: "CPU",
+  CPU_COOLER: "CPU_COOLER",
+  MOTHERBOARD: "MOTHERBOARD",
+  MEMORY: "MEMORY",
+  STORAGE: "STORAGE",
+  VIDEO_CARD: "VIDEO_CARD",
+  CASE: "CASE",
+  POWER_SUPPLY: "POWER_SUPPLY",
+  MONITOR: "MONITOR",
+  OS: "OS",
+  CASE_FAN: "CASE_FAN",
+  THERMAL_PASTE: "THERMAL_PASTE",
+} as const;
+
+export type ComponentCategory = (typeof ComponentCategory)[keyof typeof ComponentCategory];
 
 export interface CategoryMetadata {
   slug: string;

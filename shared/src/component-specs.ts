@@ -1,5 +1,5 @@
-export interface ComponentSpecs {
-  // CPU specs
+// CPU specs
+export interface CpuSpecs {
   socket?: string;
   cores?: number;
   threads?: number;
@@ -8,8 +8,10 @@ export interface ComponentSpecs {
   tdp?: number;
   integratedGraphics?: string;
   l3Cache?: string;
+}
 
-  // CPU Cooler specs
+// CPU Cooler specs
+export interface CpuCoolerSpecs {
   type?: "air" | "liquid";
   fanRpm?: string;
   noiseLevelDb?: number;
@@ -17,8 +19,10 @@ export interface ComponentSpecs {
   radiatorMm?: number;
   supportedSockets?: string[];
   maxTdp?: number;
+}
 
-  // Motherboard specs
+// Motherboard specs
+export interface MotherboardSpecs {
   formFactor?: string;
   chipset?: string;
   ramSlots?: number;
@@ -29,24 +33,30 @@ export interface ComponentSpecs {
   pcieSlots?: number;
   wifi?: boolean;
   usbPorts?: number;
+}
 
-  // RAM specs
+// RAM specs
+export interface RamSpecs {
   memoryType?: string;
   speedMhz?: number;
   capacityGb?: number;
   modules?: number;
   casLatency?: number;
   voltage?: string;
+}
 
-  // Storage specs
+// Storage specs
+export interface StorageSpecs {
   type?: "SSD" | "HDD" | "NVMe";
   capacityGb?: number;
   interfaceType?: string;
   readSpeed?: string;
   writeSpeed?: string;
   formFactor?: string;
+}
 
-  // GPU specs
+// GPU specs
+export interface GpuSpecs {
   chipset?: string;
   vramGb?: number;
   baseClock?: string;
@@ -56,8 +66,10 @@ export interface ComponentSpecs {
   outputs?: string[];
   fans?: number;
   pciePowerConnectors?: number;
+}
 
-  // Case specs
+// Case specs
+export interface CaseSpecs {
   type?: string;
   supportedFormFactors?: string[];
   maxGpuLengthMm?: number;
@@ -66,16 +78,20 @@ export interface ComponentSpecs {
   driveBays35?: number;
   fanSlots?: number;
   radiatorSupport?: number[];
+}
 
-  // PSU specs
+// PSU specs
+export interface PsuSpecs {
   wattage?: number;
   efficiencyRating?: string;
   modularType?: "full" | "semi" | "none";
   formFactor?: string;
   pcieConnectors?: number;
   epsConnectors?: number;
+}
 
-  // Monitor specs
+// Monitor specs
+export interface MonitorSpecs {
   sizeInches?: number;
   resolution?: string;
   panelType?: string;
@@ -83,3 +99,15 @@ export interface ComponentSpecs {
   responseTimeMs?: number;
   adaptiveSync?: string;
 }
+
+// Union of all specs
+export type ComponentSpecs =
+  | CpuSpecs
+  | CpuCoolerSpecs
+  | MotherboardSpecs
+  | RamSpecs
+  | StorageSpecs
+  | GpuSpecs
+  | CaseSpecs
+  | PsuSpecs
+  | MonitorSpecs;
