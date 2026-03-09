@@ -2,21 +2,38 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Deploy
+## Stack
 
-Questo progetto è deployato su **Vercel** all'URL: `pcpartfinder-app.vercel.app`
+- **Framework**: React + Vite
+- **Linguaggio**: TypeScript
+- **Deploy**: Vercel (`pcpartfinder-app.vercel.app`)
+- **Repo**: https://github.com/TREBLADEV72800/pcpartfinder-app
 
-**Importante:** Ogni modifica al codice deve essere pushata e deployata su Vercel.
-
-## Comandi per il deploy
+## Comandi di sviluppo
 
 ```bash
-# Commit delle modifiche
-git add .
-git commit -m "descrizione delle modifiche"
+# Installa dipendenze
+npm install
 
-# Push su GitHub/Vercel (attiva automaticamente il deploy)
-git push
+# Avvia server di sviluppo (http://localhost:5173)
+npm run dev
+
+# Build per produzione
+npm run build
+
+# Preview della build
+npm run preview
+
+# Linting
+npm run lint
 ```
 
-Il deploy su Vercel avviene automaticamente ad ogni push sul branch principale.
+## Deploy su Vercel
+
+Ogni push sul branch `main` attiva automaticamente il deploy su Vercel.
+
+```bash
+git add .
+git commit -m "descrizione delle modifiche"
+git push
+```
