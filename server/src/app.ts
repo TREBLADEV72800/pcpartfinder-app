@@ -4,6 +4,8 @@ import { logger } from "hono/logger";
 import componentsRoute from "./routes/components.routes.js";
 import buildsRoute from "./routes/builds.routes.js";
 import chatRoute from "./routes/chat.routes.js";
+import authRoute from "./routes/auth.routes.js";
+import pricesRoute from "./routes/prices.routes.js";
 
 // Create Hono app
 const app = new Hono();
@@ -25,6 +27,8 @@ app.get("/health", (c) => {
 app.route("/api/components", componentsRoute);
 app.route("/api/builds", buildsRoute);
 app.route("/api/chat", chatRoute);
+app.route("/api/auth", authRoute);
+app.route("/api/prices", pricesRoute);
 
 // 404 handler
 app.notFound((c) => {

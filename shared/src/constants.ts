@@ -41,10 +41,7 @@ export const FORM_FACTOR_HIERARCHY = ["Mini-ITX", "MicroATX", "ATX", "EATX"] as 
 
 export type FormFactor = (typeof FORM_FACTOR_HIERARCHY)[number];
 
-// Socket attuali (2019+)
-export const MODERN_SOCKETS = ["AM4", "AM5", "LGA 1200", "LGA 1700", "LGA 1851"] as const;
-
-export type Socket = (typeof MODERN_SOCKETS)[number];
+// Socket types are now handled in sockets.ts
 
 // Chipset per socket
 export const SOCKET_CHIPSETS: Record<string, string[]> = {
