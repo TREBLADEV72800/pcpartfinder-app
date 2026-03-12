@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   TrendingDown,
@@ -10,6 +10,9 @@ import {
   Heart,
   Share2,
   Info,
+  Shield,
+  Layers,
+  Star,
 } from "lucide-react";
 import { useComponent, usePriceHistory } from "@hooks/useComponents";
 import { formatPrice } from "@lib/utils";
@@ -19,9 +22,28 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// ═════════════════════════════════════════════════════════════
-// ProductDetailPage
-// ═════════════════════════════════════════════════════════════
+/* ─── Intersection observer hook ───────────────────────────── */
+function useInView(threshold = 0.1) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setInView(true); },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+
+  return { ref, inView };
+}
+
+/* ═════════════════════════════════════════════════════════════
+   PRODUCT DETAIL PAGE
+   ═════════════════════════════════════════════════════════════ */
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const query = useComponent(id || "");
@@ -33,7 +55,7 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <div className="w-full min-h-screen">
-        <section className="py-20">
+        <section className="py-32">
           <div className="container px-4">
             <LoadingState />
           </div>
@@ -45,7 +67,7 @@ export default function ProductDetailPage() {
   if (!component) {
     return (
       <div className="w-full min-h-screen">
-        <section className="py-20">
+        <section className="py-32">
           <div className="container px-4">
             <NotFoundState />
           </div>
@@ -59,216 +81,105 @@ export default function ProductDetailPage() {
   const categoryLabel = component.category.replace(/_/g, " ");
 
   return (
-    <div className="w-full min-h-screen">
-      {/* ── Header ──────────────────────────────────────────── */}
-      <section className="border-b border-border bg-muted/30 py-12">
-        <div className="container px-4">
-          {/* Back Button */}
-          <Link
-            to={`/products/${component.category.toLowerCase()}`}
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Torna a {categoryLabel}
-          </Link>
-
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2">
-              <Badge
-                variant="secondary"
-                className="mb-4 inline-flex"
-              >
-                <Package className="mr-1.5 h-3.5 w-3.5" />
-                {categoryLabel}
-              </Badge>
-
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-4">
-                {component.name}
-              </h1>
-
-              <p className="text-xl text-muted-foreground mb-6">
-                {component.brand}
-              </p>
-
-              {/* Key Specs */}
-              <div className="flex flex-wrap gap-2">
-                {component.socket && (
-                  <Badge variant="outline">{component.socket}</Badge>
-                )}
-                {component.tdp && (
-                  <Badge variant="outline">{component.tdp}W TDP</Badge>
-                )}
-                {component.releaseYear && (
-                  <Badge variant="outline">{component.releaseYear}</Badge>
-                )}
-              </div>
-            </div>
-
-            {/* Price Card */}
-            <div className="lg:col-span-1">
-              <Card className="sticky top-24">
-                <CardContent className="p-6">
-                  {price ? (
-                    <>
-                      <div className="mb-4">
-                        <p className="text-sm text-muted-foreground mb-1">
-                          Prezzo più basso
-                        </p>
-                        <p className="text-4xl font-bold text-primary">
-                          {formatPrice(price.price)}
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          da {price.retailer}
-                        </p>
-                      </div>
-
-                      <Separator className="my-4" />
-
-                      <div className="space-y-3">
-                        <Button
-                          asChild
-                          className="w-full"
-                          size="lg"
-                        >
-                          <a
-                            href={price.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2"
-                          >
-                            <ShoppingCart className="h-4 w-4" />
-                            Acquista ora
-                          </a>
-                        </Button>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <Button variant="outline" size="sm">
-                            <Heart className="h-4 w-4 mr-2" />
-                            Salva
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Share2 className="h-4 w-4 mr-2" />
-                            Condividi
-                          </Button>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Package className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                      <p className="text-muted-foreground">
-                        Nessun prezzo disponibile
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className="w-full overflow-x-hidden">
+      {/* ── Hero ──────────────────────────────────────────── */}
+      <DetailHero
+        categoryName={categoryLabel}
+        component={component}
+        price={price}
+      />
 
       {/* ── Tabs Content ─────────────────────────────────────── */}
-      <section className="py-12">
+      <section className="py-12 bg-muted/20">
         <div className="container px-4">
           <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)}>
-            <TabsList className="mb-8">
-              <TabsTrigger value="overview">Panoramica</TabsTrigger>
-              <TabsTrigger value="specs">Specifiche</TabsTrigger>
-              <TabsTrigger value="reviews">Recensioni</TabsTrigger>
+            <TabsList className="mb-8 bg-background p-1">
+              <TabsTrigger value="overview" className="gap-2">
+                <Info className="h-4 w-4" />
+                Panoramica
+              </TabsTrigger>
+              <TabsTrigger value="specs" className="gap-2">
+                <Layers className="h-4 w-4" />
+                Specifiche
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="gap-2">
+                <Star className="h-4 w-4" />
+                Recensioni
+              </TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
-            <TabsContent value="overview" className="lg:col-span-2">
+            <TabsContent value="overview">
               <div className="grid lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">
                   {/* Description */}
-                  <Card>
-                    <CardContent className="p-6">
-                      <h2 className="text-xl font-semibold mb-4">
-                        Descrizione
-                      </h2>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {component.name} è un componente {categoryLabel} di alta qualità
-                        prodotto da {component.brand}
-                        {component.releaseYear && ` nel ${component.releaseYear}`}
-                        {component.tdp && ` con un TDP di ${component.tdp}W`}.
-                        {component.socket && ` Compatibile con socket ${component.socket}.`}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <DetailCard
+                    title="Descrizione"
+                    icon={<Info className="h-5 w-5" />}
+                  >
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      {component.name} è un componente {categoryLabel} di alta qualità
+                      prodotto da {component.brand}
+                      {component.releaseYear && ` nel ${component.releaseYear}`}
+                      {component.tdp && ` con un TDP di ${component.tdp}W`}.
+                      {component.socket && ` Compatibile con socket ${component.socket}.`}
+                    </p>
+                  </DetailCard>
 
                   {/* Price History */}
                   {priceHistory && priceHistory.length > 0 && (
-                    <Card>
-                      <CardContent className="p-6">
-                        <h2 className="text-xl font-semibold mb-4">
-                          Storico Prezzi
-                        </h2>
-                        <PriceHistoryChart history={priceHistory} />
-                      </CardContent>
-                    </Card>
+                    <DetailCard
+                      title="Storico Prezzi"
+                      icon={<TrendingDown className="h-5 w-5" />}
+                    >
+                      <PriceHistoryChart history={priceHistory} />
+                    </DetailCard>
                   )}
                 </div>
 
                 {/* Quick Stats */}
-                <div className="lg:col-span-1">
-                  <Card>
-                    <CardContent className="p-6">
-                      <h3 className="font-semibold mb-4 flex items-center gap-2">
-                        <Info className="h-4 w-4" />
-                        Informazioni
-                      </h3>
-                      <div className="space-y-4">
-                        <StatRow
-                          label="Categoria"
-                          value={categoryLabel}
-                        />
-                        {component.socket && (
-                          <StatRow label="Socket" value={component.socket} />
-                        )}
-                        {component.formFactor && (
-                          <StatRow label="Form Factor" value={component.formFactor} />
-                        )}
-                        {component.tdp && (
-                          <StatRow label="TDP" value={`${component.tdp}W`} />
-                        )}
-                        {component.releaseYear && (
-                          <StatRow label="Anno" value={String(component.releaseYear)} />
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="lg:col-span-1 space-y-6">
+                  <DetailCard
+                    title="Informazioni"
+                    icon={<Shield className="h-5 w-5" />}
+                  >
+                    <StatRow
+                      label="Categoria"
+                      value={categoryLabel}
+                    />
+                    {component.socket && (
+                      <StatRow label="Socket" value={component.socket} />
+                    )}
+                    {component.formFactor && (
+                      <StatRow label="Form Factor" value={component.formFactor} />
+                    )}
+                    {component.tdp && (
+                      <StatRow label="TDP" value={`${component.tdp}W`} />
+                    )}
+                    {component.releaseYear && (
+                      <StatRow label="Anno" value={String(component.releaseYear)} />
+                    )}
+                  </DetailCard>
 
                   {/* All Prices */}
                   {component.prices && component.prices.length > 1 && (
-                    <Card className="mt-6">
-                      <CardContent className="p-6">
-                        <h3 className="font-semibold mb-4">Tutti i Prezzi</h3>
-                        <div className="space-y-3">
-                          {component.prices.map((p, i) => (
-                            <a
-                              key={i}
-                              href={p.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-accent/50 transition-all"
-                            >
-                              <div>
-                                <p className="font-medium">{p.retailer}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {p.inStock ? "Disponibile" : "Esaurito"}
-                                </p>
-                              </div>
-                              <span className="font-semibold text-primary">
-                                {formatPrice(p.price)}
-                              </span>
-                            </a>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <DetailCard
+                      title="Tutti i Prezzi"
+                      icon={<ShoppingCart className="h-5 w-5" />}
+                    >
+                      <div className="space-y-3">
+                        {component.prices.map((p, i) => (
+                          <PriceLink
+                            key={i}
+                            retailer={p.retailer}
+                            price={p.price}
+                            currency={p.currency}
+                            url={p.url}
+                            inStock={p.inStock}
+                          />
+                        ))}
+                      </div>
+                    </DetailCard>
                   )}
                 </div>
               </div>
@@ -276,26 +187,22 @@ export default function ProductDetailPage() {
 
             {/* Specs Tab */}
             <TabsContent value="specs">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold mb-6">
-                    Specifiche Tecniche
-                  </h2>
-                  <SpecsGrid specs={specs} />
-                </CardContent>
-              </Card>
+              <DetailCard
+                title="Specifiche Tecniche"
+                icon={<Layers className="h-5 w-5" />}
+              >
+                <SpecsGrid specs={specs} />
+              </DetailCard>
             </TabsContent>
 
             {/* Reviews Tab */}
             <TabsContent value="reviews">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold mb-6">
-                    Recensioni
-                  </h2>
-                  <ReviewsPlaceholder />
-                </CardContent>
-              </Card>
+              <DetailCard
+                title="Recensioni"
+                icon={<Star className="h-5 w-5" />}
+              >
+                <ReviewsPlaceholder />
+              </DetailCard>
             </TabsContent>
           </Tabs>
         </div>
@@ -304,9 +211,236 @@ export default function ProductDetailPage() {
   );
 }
 
-// ═════════════════════════════════════════════════════════════
-// Sub-components
-// ═════════════════════════════════════════════════════════════
+/* ───────────────────────────────────────────────────────────── */
+/* Sub-components                                                 */
+/* ───────────────────────────────────────────────────────────── */
+
+function DetailHero({
+  categoryName,
+  component,
+  price,
+}: {
+  categoryName: string;
+  component: any;
+  price: any;
+}) {
+  const { ref, inView } = useInView(0.1);
+
+  return (
+    <section ref={ref} className="relative min-h-[60vh] flex items-end overflow-hidden border-b border-border">
+      {/* ── Animated background grid ── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, hsl(var(--border) / 0.3) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / 0.3) 1px, transparent 1px)",
+          backgroundSize: "80px 80px",
+        }}
+      />
+
+      {/* ── Radial glow ── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full opacity-30"
+        style={{
+          background:
+            "radial-gradient(circle, hsl(var(--primary) / 0.12) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* ── Content ── */}
+      <div className="container relative z-10 px-4 pb-16">
+        {/* Back Button */}
+        <Link
+          to={`/products/${component.category.toLowerCase()}`}
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Torna a {categoryName}
+        </Link>
+
+        <div className="flex flex-col lg:flex-row gap-8 items-end">
+          {/* Left: Info */}
+          <div
+            className="flex-1 transition-all duration-700"
+            style={{
+              opacity: inView ? 1 : 0,
+              transform: inView ? "translateY(0)" : "translateY(30px)",
+            }}
+          >
+            <Badge
+              variant="secondary"
+              className="mb-4 inline-flex gap-2"
+            >
+              <Package className="h-3.5 w-3.5" />
+              {categoryName}
+            </Badge>
+
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl mb-4">
+              {component.name}
+            </h1>
+
+            <p className="text-xl text-muted-foreground mb-6">
+              {component.brand}
+            </p>
+
+            {/* Key Specs */}
+            <div className="flex flex-wrap gap-2">
+              {component.socket && (
+                <Badge variant="outline" className="text-sm px-3 py-1">
+                  {component.socket}
+                </Badge>
+              )}
+              {component.tdp && (
+                <Badge variant="outline" className="text-sm px-3 py-1">
+                  {component.tdp}W TDP
+                </Badge>
+              )}
+              {component.releaseYear && (
+                <Badge variant="outline" className="text-sm px-3 py-1">
+                  {component.releaseYear}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Price Card */}
+          {price && (
+            <PriceCard
+              price={price.price}
+              retailer={price.retailer}
+              url={price.url}
+              inStock={price.inStock}
+              currency={price.currency}
+            />
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PriceCard({
+  price,
+  retailer,
+  url,
+  inStock,
+  currency,
+}: {
+  price: number;
+  retailer: string;
+  url: string;
+  inStock?: boolean;
+  currency: string;
+}) {
+  return (
+    <Card className="sticky top-24 border-primary/20 bg-card overflow-hidden">
+      {/* Top gradient */}
+      <div className="h-1 bg-gradient-to-r from-primary via-blue-400 to-cyan-400" />
+
+      <CardContent className="p-6">
+        <div className="mb-4">
+          <p className="text-sm text-muted-foreground mb-1">
+            Prezzo più basso
+          </p>
+          <p className="text-4xl font-extrabold text-primary">
+            {currency === "EUR" ? `€${price.toFixed(2)}` : price}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            da {retailer}
+          </p>
+        </div>
+
+        <Separator className="my-4" />
+
+        <Button
+          asChild
+          className="w-full h-14 text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all group"
+          disabled={!inStock}
+        >
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {inStock ? "Acquista ora" : "Non disponibile"}
+          </a>
+        </Button>
+
+        <div className="mt-6 space-y-3">
+          <Button
+            variant="outline"
+            className="w-full group"
+            size="lg"
+          >
+            <Heart className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
+            Salva
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full group"
+            size="lg"
+          >
+            <Share2 className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
+            Condividi
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface PriceLinkProps {
+  retailer: string;
+  price: number;
+  currency: string;
+  url: string;
+  inStock?: boolean;
+}
+
+function PriceLink({ retailer, price, currency, url, inStock }: PriceLinkProps) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center justify-between p-4 rounded-xl border border-border/60 bg-card hover:border-primary/30 hover:bg-accent/50 transition-all group"
+    >
+      <div>
+        <p className="font-medium">{retailer}</p>
+        <p className="text-xs text-muted-foreground">
+          {inStock ? "Disponibile" : "Esaurito"}
+        </p>
+      </div>
+      <span className="font-semibold text-primary">
+        {currency === "EUR" ? `€${price.toFixed(2)}` : price}
+      </span>
+    </a>
+  );
+}
+
+interface DetailCardProps {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}
+
+function DetailCard({ title, icon, children }: DetailCardProps) {
+  return (
+    <Card className="border-border/60 bg-card overflow-hidden">
+      <div className="border-b border-border bg-muted/30 px-6 py-4 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          {icon}
+        </div>
+        <h3 className="text-xl font-semibold">{title}</h3>
+      </div>
+      <div className="p-6">{children}</div>
+    </Card>
+  );
+}
 
 interface StatRowProps {
   label: string;
@@ -315,7 +449,7 @@ interface StatRowProps {
 
 function StatRow({ label, value }: StatRowProps) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+    <div className="flex items-center justify-between py-3 border-b border-border/50 last:border-0">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="font-medium">{value}</span>
     </div>
@@ -352,9 +486,9 @@ function PriceHistoryChart({ history }: PriceHistoryChartProps) {
   const priceChangePercent = ((priceChange / firstPrice) * 100).toFixed(1);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Price change indicator */}
-      <div className="flex items-center gap-2 p-4 rounded-lg bg-muted/30">
+      <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/30">
         {priceChange > 0 ? (
           <>
             <TrendingUp className="h-5 w-5 text-red-500" />
@@ -389,7 +523,7 @@ function PriceHistoryChart({ history }: PriceHistoryChartProps) {
       </div>
 
       {/* Simple line chart */}
-      <div className="h-40 relative">
+      <div className="h-48 relative">
         <svg
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
@@ -438,7 +572,7 @@ function SpecsGrid({ specs }: SpecsGridProps) {
       {displaySpecs.map(([key, value]) => (
         <div
           key={key}
-          className="flex items-center justify-between p-4 rounded-lg border border-border bg-card"
+          className="flex items-center justify-between p-4 rounded-xl border border-border/60 bg-card hover:border-primary/20 transition-colors"
         >
           <span className="text-muted-foreground capitalize">
             {key.replace(/_/g, " ")}
@@ -452,11 +586,11 @@ function SpecsGrid({ specs }: SpecsGridProps) {
 
 function ReviewsPlaceholder() {
   return (
-    <div className="text-center py-12">
-      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-        <Info className="h-8 w-8 text-primary" />
+    <div className="text-center py-16">
+      <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+        <Star className="h-10 w-10 text-primary" />
       </div>
-      <h3 className="text-lg font-semibold mb-2">
+      <h3 className="text-xl font-bold mb-3">
         Nessuna recensione ancora
       </h3>
       <p className="text-muted-foreground">
@@ -468,29 +602,29 @@ function ReviewsPlaceholder() {
 
 function LoadingState() {
   return (
-    <div className="flex flex-col items-center justify-center py-20">
-      <div className="relative w-16 h-16">
+    <div className="flex flex-col items-center justify-center py-32">
+      <div className="relative w-20 h-20 mb-6">
         <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
         <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" />
       </div>
-      <p className="mt-4 text-muted-foreground">Caricamento componente...</p>
+      <p className="text-lg text-muted-foreground">Caricamento componente...</p>
     </div>
   );
 }
 
 function NotFoundState() {
   return (
-    <div className="flex flex-col items-center justify-center py-20">
-      <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-        <Package className="h-10 w-10 text-primary" />
+    <div className="flex flex-col items-center justify-center py-32">
+      <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+        <Package className="h-12 w-12 text-primary" />
       </div>
-      <h2 className="text-2xl font-bold mb-2">
+      <h2 className="text-2xl font-bold mb-4">
         Componente non trovato
       </h2>
-      <p className="text-muted-foreground mb-6">
+      <p className="text-muted-foreground mb-8">
         Il componente che stai cercando non esiste o è stato rimosso
       </p>
-      <Button asChild>
+      <Button asChild size="lg">
         <Link to="/products/CPU">
           Torna al catalogo
         </Link>
