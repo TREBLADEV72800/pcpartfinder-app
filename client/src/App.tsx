@@ -9,7 +9,6 @@ const ProductDetailPage = lazy(() => import("@routes/ProductDetailPage"));
 const ComparePage = lazy(() => import("@routes/ComparePage"));
 const BuildsGalleryPage = lazy(() => import("@routes/BuildsGalleryPage"));
 const BuildDetailPage = lazy(() => import("@routes/BuildDetailPage"));
-const PriceDropsPage = lazy(() => import("@routes/PriceDropsPage"));
 const LoginPage = lazy(() => import("@routes/LoginPage"));
 const RegisterPage = lazy(() => import("@routes/RegisterPage"));
 const ProfilePage = lazy(() => import("@routes/ProfilePage"));
@@ -28,7 +27,6 @@ function App() {
         <Route path="/compare" element={<ComparePage />} />
         <Route path="/builds" element={<BuildsGalleryPage />} />
         <Route path="/build/:shareId" element={<BuildDetailPage />} />
-        <Route path="/price-drops" element={<PriceDropsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/profile/:username" element={<ProfilePage />} />
