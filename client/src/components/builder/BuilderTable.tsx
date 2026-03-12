@@ -1,7 +1,7 @@
 import { useBuildStore } from "@stores/useBuildStore";
 import { CATEGORIES } from "@shared";
 import { ComponentCategory } from "@interfaces/component";
-import { Cpu, HardDrive, Monitor, Fan, Box, Zap, Server, Disc, Wind, Droplet, Plus, ChevronRight } from "lucide-react";
+import { Cpu, HardDrive, Monitor, Fan, Box, Zap, Server, Disc, Wind, Droplet, Plus } from "lucide-react";
 import { formatPrice } from "@lib/utils";
 
 const CATEGORY_ICONS: Record<string, React.ReactElement> = {
