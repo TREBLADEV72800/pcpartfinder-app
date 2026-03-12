@@ -24,6 +24,8 @@ import {
   Bot,
   BarChart3,
   Layers,
+  Activity,
+  Terminal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -173,29 +175,25 @@ export default function HomePage() {
 /* ─── 1. HERO ──────────────────────────────────────────────── */
 function HeroSection() {
   return (
-    <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
-      {/* ── Animated background grid ── */}
+    <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden cyber-grid">
+      {/* ── Radial glow effects ── */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, hsl(var(--border) / 0.4) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / 0.4) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
-      />
-
-      {/* ── Radial glow ── */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[800px] w-[800px] rounded-full opacity-40"
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[800px] w-[800px] rounded-full opacity-30"
         style={{
           background:
-            "radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%)",
+            "radial-gradient(circle, hsl(var(--primary) / 0.2) 0%, transparent 50%)",
         }}
       />
 
-      {/* ── Floating orbs ── */}
+      {/* ── Animated tech lines ── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent animate-[data-stream_3s_linear_infinite]" />
+        <div className="absolute top-2/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent animate-[data-stream_4s_linear_infinite_reverse]" />
+        <div className="absolute top-3/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent animate-[data-stream_5s_linear_infinite]" />
+      </div>
+
+      {/* ── Floating orbs with cyber effect ── */}
       <div
         aria-hidden
         className="pointer-events-none absolute top-20 left-[15%] h-72 w-72 rounded-full bg-blue-500/10 blur-[100px] animate-[float_8s_ease-in-out_infinite]"
@@ -220,14 +218,11 @@ function HeroSection() {
         {/* Top badge */}
         <div className="flex justify-center mb-8 animate-[fadeInDown_0.6s_ease-out]">
           <Badge
-            variant="outline"
-            className="gap-2 px-4 py-2 text-sm font-medium border-primary/30 bg-primary/5 backdrop-blur-sm hover:bg-primary/10 transition-colors cursor-default"
+            variant="cyber"
+            className="gap-2 px-4 py-2 text-sm font-medium cursor-default"
           >
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            </span>
-            Assistenza AI integrata
+            <Terminal className="h-3.5 w-3.5" />
+            v2.0 - Cyber-Industrial Design
           </Badge>
         </div>
 
@@ -235,8 +230,7 @@ function HeroSection() {
         <h1 className="animate-[fadeInUp_0.8s_ease-out] text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
           <span className="block text-foreground">Build Your</span>
           <span
-            className="block mt-2 bg-gradient-to-r from-primary via-blue-400 to-cyan-400 bg-clip-text text-transparent animate-[gradientShift_6s_ease-in-out_infinite]"
-            style={{ backgroundSize: "200% auto" }}
+            className="block mt-2 gradient-text-cyber"
           >
             Dream PC
           </span>
@@ -253,7 +247,8 @@ function HeroSection() {
           <Button
             asChild
             size="lg"
-            className="group relative min-w-[220px] h-13 text-base font-semibold overflow-hidden"
+            variant="cyber"
+            className="min-w-[220px] h-13 text-base font-semibold"
           >
             <Link to="/builder">
               <span className="relative z-10 flex items-center gap-2">
@@ -266,13 +261,14 @@ function HeroSection() {
           <Button
             asChild
             size="lg"
-            variant="outline"
-            className="group min-w-[220px] h-13 text-base font-semibold border-border/60 bg-background/50 backdrop-blur-sm hover:border-primary/40 hover:bg-primary/5"
+            variant="neon"
+            className="min-w-[220px] h-13 text-base font-semibold"
           >
             <Link to="/builds">
               <span className="flex items-center gap-2">
+                <Activity className="h-4 w-4" />
                 Esplora Build
-                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
               </span>
             </Link>
           </Button>
@@ -293,7 +289,7 @@ function StatsSection() {
   const { ref, inView } = useInView(0.3);
 
   return (
-    <section ref={ref} className="relative border-b border-border bg-muted/30">
+    <section ref={ref} className="relative border-b border-border/40 bg-muted/20">
       <div className="container px-4 py-16">
         <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
           {STATS.map((stat, i) => (
@@ -325,12 +321,12 @@ function StatCard({
         transitionDelay: `${delay}ms`,
       }}
     >
-      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-sm bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-lg group-hover:shadow-primary/20 group-hover:scale-110">
         {stat.icon}
       </div>
       <p className="text-4xl font-extrabold tracking-tight text-foreground">
         {count}
-        <span className="text-primary">{stat.suffix}</span>
+        <span className="gradient-text">{stat.suffix}</span>
       </p>
       <p className="mt-1 text-sm font-medium text-muted-foreground">
         {stat.label}
@@ -354,12 +350,12 @@ function FeaturesSection() {
             transform: inView ? "translateY(0)" : "translateY(30px)",
           }}
         >
-          <Badge variant="secondary" className="mb-4">
+          <Badge variant="cyber-accent" className="mb-4">
             Funzionalità
           </Badge>
           <h2 className="text-3xl font-bold sm:text-4xl">
             Tutto ciò che ti serve,{" "}
-            <span className="text-primary">niente di meno</span>
+            <span className="gradient-text">niente di meno</span>
           </h2>
           <p className="mt-4 text-muted-foreground text-lg">
             Strumenti professionali per configurare il PC perfetto. Gratis, per sempre.
@@ -388,7 +384,8 @@ function FeatureCard({
 }) {
   const inner = (
     <Card
-      className="group relative h-full overflow-hidden border-border/60 bg-card transition-all duration-500 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
+      variant="cyber"
+      className="group relative h-full transition-all duration-500"
       style={{
         opacity: inView ? 1 : 0,
         transform: inView ? "translateY(0)" : "translateY(40px)",
@@ -400,10 +397,10 @@ function FeatureCard({
         className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${feature.gradient} opacity-0 transition-opacity group-hover:opacity-100`}
       />
 
-      <CardContent className="flex h-full flex-col p-7">
+      <CardContent className="flex h-full flex-col p-6">
         {/* Icon */}
         <div
-          className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} text-white shadow-lg shadow-primary/10 transition-transform group-hover:scale-110`}
+          className={`mb-5 flex h-12 w-12 items-center justify-center rounded-sm bg-gradient-to-br ${feature.gradient} text-white shadow-lg shadow-primary/10 transition-transform group-hover:scale-110`}
         >
           {feature.icon}
         </div>
@@ -420,14 +417,14 @@ function FeatureCard({
           Scopri di più
           <ArrowRight className="h-3.5 w-3.5" />
         </div>
-      )}
+        )}
       </CardContent>
     </Card>
   );
 
   if (feature.link) {
     return (
-      <Link to={feature.link} className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg">
+      <Link to={feature.link} className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm">
         {inner}
       </Link>
     );
@@ -442,7 +439,7 @@ function CategoriesSection() {
   const categories = Object.values(CATEGORIES);
 
   return (
-    <section ref={ref} className="relative py-24 bg-muted/20">
+    <section ref={ref} className="relative py-24 bg-muted/10 cyber-scan">
       {/* Background decoration */}
       <div
         aria-hidden
@@ -458,12 +455,12 @@ function CategoriesSection() {
             transform: inView ? "translateY(0)" : "translateY(30px)",
           }}
         >
-          <Badge variant="secondary" className="mb-4">
+          <Badge variant="neon-accent" className="mb-4">
             Catalogo
           </Badge>
           <h2 className="text-3xl font-bold sm:text-4xl">
             Esplora per{" "}
-            <span className="text-primary">Categoria</span>
+            <span className="gradient-text">Categoria</span>
           </h2>
           <p className="mt-4 text-muted-foreground text-lg">
             12 categorie, migliaia di componenti. Trova esattamente ciò che cerchi.
@@ -493,7 +490,7 @@ function CategoryCard({
   return (
     <Link
       to={`/products/${cat.slug}`}
-      className="group relative flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4 transition-all duration-500 hover:border-primary/30 hover:bg-accent/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      className="group relative flex items-center gap-4 rounded-sm border border-border/60 bg-card/80 backdrop-blur-sm p-4 transition-all duration-500 hover:border-primary/40 hover:bg-accent/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       style={{
         opacity: inView ? 1 : 0,
         transform: inView
@@ -503,7 +500,7 @@ function CategoryCard({
       }}
     >
       {/* Icon */}
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-md group-hover:shadow-primary/20 group-hover:scale-105">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-md group-hover:shadow-primary/20 group-hover:scale-105">
         {CATEGORY_ICONS[cat.slug] || <Cpu className="h-6 w-6" />}
       </div>
 
@@ -567,12 +564,12 @@ function HowItWorksSection() {
             transform: inView ? "translateY(0)" : "translateY(30px)",
           }}
         >
-          <Badge variant="secondary" className="mb-4">
+          <Badge variant="holographic" className="mb-4">
             Come funziona
           </Badge>
           <h2 className="text-3xl font-bold sm:text-4xl">
             Da zero a PC perfetto in{" "}
-            <span className="text-primary">4 step</span>
+            <span className="gradient-text">4 step</span>
           </h2>
         </div>
 
@@ -599,13 +596,13 @@ function HowItWorksSection() {
               {/* Step number + icon */}
               <div className="relative mx-auto mb-6 flex h-16 w-16 items-center justify-center">
                 {/* Background circle */}
-                <div className="absolute inset-0 rounded-2xl bg-primary/10 transition-all duration-300 group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/25 group-hover:scale-110" />
+                <div className="absolute inset-0 rounded-sm bg-primary/10 transition-all duration-300 group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/25 group-hover:scale-110" />
                 {/* Icon */}
                 <div className="relative z-10 text-primary transition-colors group-hover:text-primary-foreground">
                   {step.icon}
                 </div>
                 {/* Step badge */}
-                <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold">
+                <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-sm bg-foreground text-background text-xs font-bold">
                   {step.step}
                 </span>
               </div>
@@ -627,20 +624,9 @@ function CTASection() {
   const { ref, inView } = useInView(0.2);
 
   return (
-    <section ref={ref} className="relative overflow-hidden border-t border-border/40">
+    <section ref={ref} className="relative overflow-hidden border-t border-border/40 cyber-scan">
       {/* Background effects */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-violet-500/5"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute right-[10%] top-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-primary/8 blur-[150px]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-[10%] top-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-violet-500/8 blur-[120px]"
-      />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
 
       <div
         className="container relative z-10 px-4 py-28 text-center transition-all duration-700"
@@ -652,7 +638,7 @@ function CTASection() {
         <div className="mx-auto max-w-3xl">
           <h2 className="text-4xl font-extrabold sm:text-5xl md:text-6xl">
             Pronto a costruire il{" "}
-            <span className="bg-gradient-to-r from-primary to-violet-400 bg-clip-text text-transparent">
+            <span className="gradient-text-cyber">
               tuo prossimo PC
             </span>
             ?
@@ -666,15 +652,15 @@ function CTASection() {
           {/* Trust badges */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <Check className="h-4 w-4 text-emerald-500" />
+              <Check className="h-4 w-4 text-success" />
               100% Gratuito
             </span>
             <span className="flex items-center gap-1.5">
-              <Check className="h-4 w-4 text-emerald-500" />
+              <Check className="h-4 w-4 text-success" />
               Nessuna registrazione richiesta
             </span>
             <span className="flex items-center gap-1.5">
-              <Check className="h-4 w-4 text-emerald-500" />
+              <Check className="h-4 w-4 text-success" />
               AI integrata
             </span>
           </div>
@@ -683,10 +669,12 @@ function CTASection() {
             <Button
               asChild
               size="lg"
-              className="group min-w-[240px] h-14 text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow"
+              variant="cyber"
+              className="min-w-[240px] h-14 text-base font-semibold"
             >
               <Link to="/builder">
                 <span className="flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
                   Inizia ora — è gratis
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
@@ -696,7 +684,7 @@ function CTASection() {
               asChild
               size="lg"
               variant="ghost"
-              className="group min-w-[200px] h-14 text-base font-semibold"
+              className="min-w-[200px] h-14 text-base font-semibold"
             >
               <Link to="/builds">
                 <span className="flex items-center gap-2">
