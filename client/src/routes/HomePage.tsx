@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   Cpu,
@@ -10,263 +11,423 @@ import {
   Disc,
   Wind,
   Droplet,
-  TrendingDown,
   Users,
   ArrowRight,
   Sparkles,
   Shield,
   MonitorPlay,
   MemoryStick,
+  ChevronRight,
+  Star,
+  Check,
+  MousePointerClick,
+  Bot,
+  BarChart3,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { CATEGORIES, type CategoryMetadata } from "@shared";
 
-// ── Icon map ────────────────────────────────────────────────
+/* ─── Icon map ─────────────────────────────────────────────── */
 const CATEGORY_ICONS: Record<string, React.ReactElement> = {
-  CPU: <Cpu className="h-7 w-7" />,
-  CPU_COOLER: <Fan className="h-7 w-7" />,
-  MOTHERBOARD: <Server className="h-7 w-7" />,
-  MEMORY: <MemoryStick className="h-7 w-7" />,
-  STORAGE: <HardDrive className="h-7 w-7" />,
-  VIDEO_CARD: <Monitor className="h-7 w-7" />,
-  CASE: <Box className="h-7 w-7" />,
-  POWER_SUPPLY: <Zap className="h-7 w-7" />,
-  MONITOR: <MonitorPlay className="h-7 w-7" />,
-  OS: <Disc className="h-7 w-7" />,
-  CASE_FAN: <Wind className="h-7 w-7" />,
-  THERMAL_PASTE: <Droplet className="h-7 w-7" />,
+  CPU: <Cpu className="h-6 w-6" />,
+  CPU_COOLER: <Fan className="h-6 w-6" />,
+  MOTHERBOARD: <Server className="h-6 w-6" />,
+  MEMORY: <MemoryStick className="h-6 w-6" />,
+  STORAGE: <HardDrive className="h-6 w-6" />,
+  VIDEO_CARD: <Monitor className="h-6 w-6" />,
+  CASE: <Box className="h-6 w-6" />,
+  POWER_SUPPLY: <Zap className="h-6 w-6" />,
+  MONITOR: <MonitorPlay className="h-6 w-6" />,
+  OS: <Disc className="h-6 w-6" />,
+  CASE_FAN: <Wind className="h-6 w-6" />,
+  THERMAL_PASTE: <Droplet className="h-6 w-6" />,
 };
 
-// ── Feature definitions ─────────────────────────────────────
-const FEATURES = [
+/* ─── Features data ────────────────────────────────────────── */
+type Feature = {
+  icon: React.ReactElement;
+  title: string;
+  description: string;
+  link?: string;
+  gradient: string;
+};
+
+const FEATURES: Feature[] = [
   {
-    icon: <Cpu className="h-8 w-8" />,
+    icon: <Cpu className="h-6 w-6" />,
     title: "System Builder",
     description:
-      "Configura il tuo PC componente per componente con verifica compatibilità automatica.",
+      "Configura il tuo PC componente per componente con interfaccia drag & drop intuitiva.",
     link: "/builder",
+    gradient: "from-blue-500 to-cyan-400",
   },
   {
-    icon: <Shield className="h-8 w-8" />,
+    icon: <Shield className="h-6 w-6" />,
     title: "Verifica Compatibilità",
     description:
-      "Controlla automaticamente socket, form factor, wattaggio e molto altro.",
+      "8 regole di validazione in tempo reale: socket, DDR, form factor, wattaggio e altro.",
+    gradient: "from-emerald-500 to-green-400",
   },
   {
-    icon: <HardDrive className="h-8 w-8" />,
+    icon: <Layers className="h-6 w-6" />,
     title: "Database Completo",
     description:
-      "Migliaia di componenti con prezzi aggiornati da più rivenditori.",
-    link: "/products/CPU",
+      "Oltre 10.000 componenti in 12 categorie con specifiche tecniche dettagliate.",
+    link: "/products/cpu",
+    gradient: "from-violet-500 to-purple-400",
   },
   {
-    icon: <TrendingDown className="h-8 w-8" />,
+    icon: <BarChart3 className="h-6 w-6" />,
     title: "Storico Prezzi",
     description:
-      "Tieni traccia dei prezzi e ricevi avvisi quando scendono.",
+      "Grafici interattivi con andamento prezzi e alert personalizzati.",
     link: "/price-drops",
+    gradient: "from-orange-500 to-amber-400",
   },
   {
-    icon: <Users className="h-8 w-8" />,
+    icon: <Users className="h-6 w-6" />,
     title: "Community Builds",
     description:
-      "Condividi le tue build e scopri quelle della community.",
+      "Esplora, vota e clona le configurazioni della community.",
     link: "/builds",
+    gradient: "from-pink-500 to-rose-400",
   },
   {
-    icon: <Monitor className="h-8 w-8" />,
-    title: "Confronto Prodotti",
+    icon: <Bot className="h-6 w-6" />,
+    title: "Assistente AI",
     description:
-      "Confronta specifiche e prezzi di diversi componenti affiancati.",
-    link: "/compare",
+      "Chat intelligente che conosce il tuo budget e ti suggerisce la build perfetta.",
+    gradient: "from-indigo-500 to-blue-400",
   },
-] as const;
-
-// ── Stats ───────────────────────────────────────────────────
-const STATS = [
-  { value: "12", label: "Categorie" },
-  { value: "10k+", label: "Componenti" },
-  { value: "50+", label: "Rivenditori" },
-  { value: "∞", label: "Configurazioni" },
 ];
 
-// ═════════════════════════════════════════════════════════════
-// HomePage
-// ═════════════════════════════════════════════════════════════
+/* ─── Stats data ───────────────────────────────────────────── */
+const STATS = [
+  { value: 12, suffix: "", label: "Categorie", icon: <Layers className="h-5 w-5" /> },
+  { value: 10, suffix: "k+", label: "Componenti", icon: <Cpu className="h-5 w-5" /> },
+  { value: 8, suffix: "", label: "Regole Compat.", icon: <Shield className="h-5 w-5" /> },
+  { value: 100, suffix: "%", label: "Gratuito", icon: <Star className="h-5 w-5" /> },
+];
+
+/* ─── Animated counter hook ────────────────────────────────── */
+function useCountUp(target: number, duration = 2000, trigger = true) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!trigger) return;
+    let start = 0;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) {
+        setCount(target);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+    return () => clearInterval(timer);
+  }, [target, duration, trigger]);
+
+  return count;
+}
+
+/* ─── Intersection observer hook ───────────────────────────── */
+function useInView(threshold = 0.1) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setInView(true); },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+
+  return { ref, inView };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HOME PAGE
+   ═══════════════════════════════════════════════════════════════ */
 export default function HomePage() {
   return (
-    <div className="w-full">
-      {/* ── Hero ──────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-background via-background to-muted/40 py-20 md:py-28">
-        {/* Decorative grid */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-30"
-        />
-
-        {/* Decorative glow */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[480px] w-[720px] rounded-full bg-primary/10 blur-[120px]"
-        />
-
-        <div className="container relative z-10 px-4 text-center">
-          <Badge
-            variant="secondary"
-            className="mb-6 px-4 py-1.5 text-sm font-medium"
-          >
-            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-            Assistenza AI integrata
-          </Badge>
-
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-            Build Your{" "}
-            <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
-              Dream PC
-            </span>
-          </h1>
-
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
-            Configura il tuo PC perfetto con verifica compatibilità in tempo
-            reale, confronto prezzi e assistenza AI.
-          </p>
-
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button asChild size="lg" className="min-w-[200px] text-base">
-              <Link to="/builder">
-                Inizia a Costruire
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="min-w-[200px] text-base"
-            >
-              <Link to="/builds">Esplora Build</Link>
-            </Button>
-          </div>
-
-          {/* Stats strip */}
-          <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-6 sm:grid-cols-4">
-            {STATS.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-3xl font-bold text-primary">{s.value}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Features ──────────────────────────────────────── */}
-      <section className="py-20">
-        <div className="container px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold">
-              Tutto ciò che ti serve per assemblare il tuo PC
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              Strumenti professionali, completamente gratuiti.
-            </p>
-          </div>
-
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => (
-              <FeatureCard key={f.title} {...f} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <Separator />
-
-      {/* ── Category Browse ───────────────────────────────── */}
-      <section className="py-20 bg-muted/30">
-        <div className="container px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold">Esplora per Categoria</h2>
-            <p className="mt-3 text-muted-foreground">
-              Sfoglia il catalogo per trovare il componente ideale.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {Object.values(CATEGORIES).map((cat: CategoryMetadata) => (
-              <CategoryCard key={cat.slug} cat={cat} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA ───────────────────────────────────────────── */}
-      <section className="relative overflow-hidden py-20">
-        {/* Decorative glow */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-primary/10 blur-[100px]"
-        />
-
-        <div className="container relative z-10 px-4 text-center">
-          <h2 className="text-3xl font-bold">Pronto a iniziare?</h2>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Inizia subito a configurare il tuo PC. La verifica compatibilità ti
-            guiderà verso scelte corrette.
-          </p>
-          <Button asChild size="lg" className="mt-8 min-w-[220px] text-base">
-            <Link to="/builder">
-              Vai al System Builder
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </section>
+    <div className="w-full overflow-x-hidden">
+      <HeroSection />
+      <StatsSection />
+      <FeaturesSection />
+      <CategoriesSection />
+      <HowItWorksSection />
+      <CTASection />
     </div>
   );
 }
 
-// ═════════════════════════════════════════════════════════════
-// Sub-components
-// ═════════════════════════════════════════════════════════════
+/* ─── 1. HERO ──────────────────────────────────────────────── */
+function HeroSection() {
+  return (
+    <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
+      {/* ── Animated background grid ── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, hsl(var(--border) / 0.4) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / 0.4) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
 
-interface FeatureCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  link?: string;
-}
+      {/* ── Radial glow ── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[800px] w-[800px] rounded-full opacity-40"
+        style={{
+          background:
+            "radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%)",
+        }}
+      />
 
-function FeatureCard({ icon, title, description, link }: FeatureCardProps) {
-  const inner = (
-    <Card className="group relative h-full overflow-hidden border-border transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5">
-      <CardContent className="flex h-full flex-col p-6">
-        {/* Icon wrapper */}
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-          {icon}
+      {/* ── Floating orbs ── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-20 left-[15%] h-72 w-72 rounded-full bg-blue-500/10 blur-[100px] animate-[float_8s_ease-in-out_infinite]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute bottom-20 right-[10%] h-96 w-96 rounded-full bg-violet-500/10 blur-[120px] animate-[float_10s_ease-in-out_infinite_reverse]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-1/2 right-[25%] h-48 w-48 rounded-full bg-cyan-500/8 blur-[80px] animate-[float_6s_ease-in-out_infinite_2s]"
+      />
+
+      {/* ── Gradient border bottom ── */}
+      <div
+        aria-hidden
+        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"
+      />
+
+      {/* ── Content ── */}
+      <div className="container relative z-10 px-4 py-20 text-center">
+        {/* Top badge */}
+        <div className="flex justify-center mb-8 animate-[fadeInDown_0.6s_ease-out]">
+          <Badge
+            variant="outline"
+            className="gap-2 px-4 py-2 text-sm font-medium border-primary/30 bg-primary/5 backdrop-blur-sm hover:bg-primary/10 transition-colors cursor-default"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            Assistenza AI integrata
+          </Badge>
         </div>
 
-        <h3 className="text-xl font-semibold">{title}</h3>
-        <p className="mt-2 flex-1 text-sm text-muted-foreground leading-relaxed">
-          {description}
+        {/* Main heading */}
+        <h1 className="animate-[fadeInUp_0.8s_ease-out] text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
+          <span className="block text-foreground">Build Your</span>
+          <span
+            className="block mt-2 bg-gradient-to-r from-primary via-blue-400 to-cyan-400 bg-clip-text text-transparent animate-[gradientShift_6s_ease-in-out_infinite]"
+            style={{ backgroundSize: "200% auto" }}
+          >
+            Dream PC
+          </span>
+        </h1>
+
+        {/* Subtitle */}
+        <p className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground md:text-xl leading-relaxed animate-[fadeInUp_0.8s_ease-out_0.2s_both]">
+          Configura il tuo PC perfetto con verifica compatibilità in tempo reale,
+          confronto prezzi da più rivenditori e assistenza AI personalizzata.
         </p>
 
-        {link && (
-          <span className="mt-4 inline-flex items-center text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
-            Scopri di più
-            <ArrowRight className="ml-1 h-3.5 w-3.5" />
-          </span>
-        )}
+        {/* CTAs */}
+        <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row animate-[fadeInUp_0.8s_ease-out_0.4s_both]">
+          <Button
+            asChild
+            size="lg"
+            className="group relative min-w-[220px] h-13 text-base font-semibold overflow-hidden"
+          >
+            <Link to="/builder">
+              <span className="relative z-10 flex items-center gap-2">
+                Inizia a Costruire
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="group min-w-[220px] h-13 text-base font-semibold border-border/60 bg-background/50 backdrop-blur-sm hover:border-primary/40 hover:bg-primary/5"
+          >
+            <Link to="/builds">
+              <span className="flex items-center gap-2">
+                Esplora Build
+                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+              </span>
+            </Link>
+          </Button>
+        </div>
+
+        {/* Scroll hint */}
+        <div className="mt-20 flex flex-col items-center gap-2 text-muted-foreground/60 animate-[fadeIn_1s_ease-out_1s_both]">
+          <MousePointerClick className="h-5 w-5 animate-bounce" />
+          <span className="text-xs tracking-widest uppercase">Scorri per scoprire</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── 2. STATS ─────────────────────────────────────────────── */
+function StatsSection() {
+  const { ref, inView } = useInView(0.3);
+
+  return (
+    <section ref={ref} className="relative border-b border-border bg-muted/30">
+      <div className="container px-4 py-16">
+        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
+          {STATS.map((stat, i) => (
+            <StatCard key={stat.label} stat={stat} inView={inView} delay={i * 150} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatCard({
+  stat,
+  inView,
+  delay,
+}: {
+  stat: (typeof STATS)[number];
+  inView: boolean;
+  delay: number;
+}) {
+  const count = useCountUp(stat.value, 1500, inView);
+
+  return (
+    <div
+      className="group flex flex-col items-center text-center transition-all duration-700"
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(20px)",
+        transitionDelay: `${delay}ms`,
+      }}
+    >
+      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+        {stat.icon}
+      </div>
+      <p className="text-4xl font-extrabold tracking-tight text-foreground">
+        {count}
+        <span className="text-primary">{stat.suffix}</span>
+      </p>
+      <p className="mt-1 text-sm font-medium text-muted-foreground">
+        {stat.label}
+      </p>
+    </div>
+  );
+}
+
+/* ─── 3. FEATURES ──────────────────────────────────────────── */
+function FeaturesSection() {
+  const { ref, inView } = useInView(0.1);
+
+  return (
+    <section ref={ref} className="py-24">
+      <div className="container px-4">
+        {/* Header */}
+        <div
+          className="mx-auto max-w-2xl text-center transition-all duration-700"
+          style={{
+            opacity: inView ? 1 : 0,
+            transform: inView ? "translateY(0)" : "translateY(30px)",
+          }}
+        >
+          <Badge variant="secondary" className="mb-4">
+            Funzionalità
+          </Badge>
+          <h2 className="text-3xl font-bold sm:text-4xl">
+            Tutto ciò che ti serve,{" "}
+            <span className="text-primary">niente di meno</span>
+          </h2>
+          <p className="mt-4 text-muted-foreground text-lg">
+            Strumenti professionali per configurare il PC perfetto. Gratis, per sempre.
+          </p>
+        </div>
+
+        {/* Grid */}
+        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((feature, i) => (
+            <FeatureCard key={feature.title} feature={feature} index={i} inView={inView} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FeatureCard({
+  feature,
+  index,
+  inView,
+}: {
+  feature: Feature;
+  index: number;
+  inView: boolean;
+}) {
+  const inner = (
+    <Card
+      className="group relative h-full overflow-hidden border-border/60 bg-card transition-all duration-500 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(40px)",
+        transitionDelay: `${index * 100}ms`,
+      }}
+    >
+      {/* Top gradient line */}
+      <div
+        className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${feature.gradient} opacity-0 transition-opacity group-hover:opacity-100`}
+      />
+
+      <CardContent className="flex h-full flex-col p-7">
+        {/* Icon */}
+        <div
+          className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} text-white shadow-lg shadow-primary/10 transition-transform group-hover:scale-110`}
+        >
+          {feature.icon}
+        </div>
+
+        {/* Content */}
+        <h3 className="text-lg font-bold">{feature.title}</h3>
+        <p className="mt-2 flex-1 text-sm text-muted-foreground leading-relaxed">
+          {feature.description}
+        </p>
+
+        {/* Link indicator */}
+        {feature.link && (
+          <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-primary opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-1">
+          Scopri di più
+          <ArrowRight className="h-3.5 w-3.5" />
+        </div>
+      )}
       </CardContent>
     </Card>
   );
 
-  if (link) {
+  if (feature.link) {
     return (
-      <Link to={link} className="block h-full">
+      <Link to={feature.link} className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg">
         {inner}
       </Link>
     );
@@ -275,29 +436,278 @@ function FeatureCard({ icon, title, description, link }: FeatureCardProps) {
   return inner;
 }
 
-function CategoryCard({ cat }: { cat: CategoryMetadata }) {
+/* ─── 4. CATEGORIES ────────────────────────────────────────── */
+function CategoriesSection() {
+  const { ref, inView } = useInView(0.1);
+  const categories = Object.values(CATEGORIES);
+
+  return (
+    <section ref={ref} className="relative py-24 bg-muted/20">
+      {/* Background decoration */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-primary/5 blur-[150px]"
+      />
+
+      <div className="container relative z-10 px-4">
+        {/* Header */}
+        <div
+          className="mx-auto max-w-2xl text-center transition-all duration-700"
+          style={{
+            opacity: inView ? 1 : 0,
+            transform: inView ? "translateY(0)" : "translateY(30px)",
+          }}
+        >
+          <Badge variant="secondary" className="mb-4">
+            Catalogo
+          </Badge>
+          <h2 className="text-3xl font-bold sm:text-4xl">
+            Esplora per{" "}
+            <span className="text-primary">Categoria</span>
+          </h2>
+          <p className="mt-4 text-muted-foreground text-lg">
+            12 categorie, migliaia di componenti. Trova esattamente ciò che cerchi.
+          </p>
+        </div>
+
+        {/* Category grid */}
+        <div className="mt-14 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {categories.map((cat, i) => (
+            <CategoryCard key={cat.slug} cat={cat} index={i} inView={inView} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CategoryCard({
+  cat,
+  index,
+  inView,
+}: {
+  cat: CategoryMetadata;
+  index: number;
+  inView: boolean;
+}) {
   return (
     <Link
       to={`/products/${cat.slug}`}
-      className="group flex items-center gap-4 rounded-lg border border-border bg-card p-5 transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5"
+      className="group relative flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4 transition-all duration-500 hover:border-primary/30 hover:bg-accent/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView
+          ? "translateY(0)"
+          : "translateY(30px)",
+        transitionDelay: `${index * 50}ms`,
+      }}
     >
       {/* Icon */}
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-        {CATEGORY_ICONS[cat.slug] || <Cpu className="h-7 w-7" />}
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-md group-hover:shadow-primary/20 group-hover:scale-105">
+        {CATEGORY_ICONS[cat.slug] || <Cpu className="h-6 w-6" />}
       </div>
 
       {/* Text */}
       <div className="min-w-0 flex-1">
-        <h3 className="font-semibold leading-snug">{cat.name}</h3>
+        <h3 className="font-semibold text-sm leading-snug group-hover:text-primary transition-colors">
+          {cat.name}
+        </h3>
         {cat.description && (
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
             {cat.description}
           </p>
         )}
       </div>
 
-      {/* Arrow indicator */}
-      <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:text-primary group-hover:opacity-100" />
+      {/* Arrow */}
+      <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-all duration-300 group-hover:text-primary group-hover:translate-x-1 group-hover:opacity-100" />
     </Link>
+  );
+}
+
+/* ─── 5. HOW IT WORKS ──────────────────────────────────────── */
+const STEPS = [
+  {
+    step: "01",
+    title: "Scegli i Componenti",
+    description: "Seleziona CPU, GPU, RAM e tutti gli altri componenti dal nostro catalogo.",
+    icon: <MousePointerClick className="h-6 w-6" />,
+  },
+  {
+    step: "02",
+    title: "Verifica Automatica",
+    description: "Il sistema controlla compatibilità, wattaggio e form factor in tempo reale.",
+    icon: <Shield className="h-6 w-6" />,
+  },
+  {
+    step: "03",
+    title: "Confronta Prezzi",
+    description: "Trova il prezzo migliore tra decine di rivenditori con storico integrato.",
+    icon: <BarChart3 className="h-6 w-6" />,
+  },
+  {
+    step: "04",
+    title: "Salva e Condividi",
+    description: "Esporta la tua build, condividila con la community o chiedi consiglio all'AI.",
+    icon: <Sparkles className="h-6 w-6" />,
+  },
+];
+
+function HowItWorksSection() {
+  const { ref, inView } = useInView(0.1);
+
+  return (
+    <section ref={ref} className="py-24 border-t border-border/40">
+      <div className="container px-4">
+        {/* Header */}
+        <div
+          className="mx-auto max-w-2xl text-center transition-all duration-700"
+          style={{
+            opacity: inView ? 1 : 0,
+            transform: inView ? "translateY(0)" : "translateY(30px)",
+          }}
+        >
+          <Badge variant="secondary" className="mb-4">
+            Come funziona
+          </Badge>
+          <h2 className="text-3xl font-bold sm:text-4xl">
+            Da zero a PC perfetto in{" "}
+            <span className="text-primary">4 step</span>
+          </h2>
+        </div>
+
+        {/* Steps */}
+        <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {STEPS.map((step, i) => (
+            <div
+              key={step.step}
+              className="group relative text-center transition-all duration-700"
+              style={{
+                opacity: inView ? 1 : 0,
+                transform: inView ? "translateY(0)" : "translateY(40px)",
+                transitionDelay: `${i * 150}ms`,
+              }}
+            >
+              {/* Connector line (hidden on last + mobile) */}
+              {i < STEPS.length - 1 && (
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute top-8 left-[60%] right-[-40%] hidden h-px border-t-2 border-dashed border-border/60 lg:block"
+                />
+              )}
+
+              {/* Step number + icon */}
+              <div className="relative mx-auto mb-6 flex h-16 w-16 items-center justify-center">
+                {/* Background circle */}
+                <div className="absolute inset-0 rounded-2xl bg-primary/10 transition-all duration-300 group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/25 group-hover:scale-110" />
+                {/* Icon */}
+                <div className="relative z-10 text-primary transition-colors group-hover:text-primary-foreground">
+                  {step.icon}
+                </div>
+                {/* Step badge */}
+                <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold">
+                  {step.step}
+                </span>
+              </div>
+
+              <h3 className="text-lg font-bold">{step.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                {step.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── 6. FINAL CTA ─────────────────────────────────────────── */
+function CTASection() {
+  const { ref, inView } = useInView(0.2);
+
+  return (
+    <section ref={ref} className="relative overflow-hidden border-t border-border/40">
+      {/* Background effects */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-violet-500/5"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute right-[10%] top-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-primary/8 blur-[150px]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-[10%] top-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-violet-500/8 blur-[120px]"
+      />
+
+      <div
+        className="container relative z-10 px-4 py-28 text-center transition-all duration-700"
+        style={{
+          opacity: inView ? 1 : 0,
+          transform: inView ? "translateY(0)" : "translateY(30px)",
+        }}
+      >
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-4xl font-extrabold sm:text-5xl md:text-6xl">
+            Pronto a costruire il{" "}
+            <span className="bg-gradient-to-r from-primary to-violet-400 bg-clip-text text-transparent">
+              tuo prossimo PC
+            </span>
+            ?
+          </h2>
+
+          <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
+            Unisciti a migliaia di utenti che hanno già configurato il loro PC
+            perfetto. È gratuito, veloce e intelligente.
+          </p>
+
+          {/* Trust badges */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Check className="h-4 w-4 text-emerald-500" />
+              100% Gratuito
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="h-4 w-4 text-emerald-500" />
+              Nessuna registrazione richiesta
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="h-4 w-4 text-emerald-500" />
+              AI integrata
+            </span>
+          </div>
+
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Button
+              asChild
+              size="lg"
+              className="group min-w-[240px] h-14 text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow"
+            >
+              <Link to="/builder">
+                <span className="flex items-center gap-2">
+                  Inizia ora — è gratis
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="ghost"
+              className="group min-w-[200px] h-14 text-base font-semibold"
+            >
+              <Link to="/builds">
+                <span className="flex items-center gap-2">
+                  Vedi le build
+                  <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
