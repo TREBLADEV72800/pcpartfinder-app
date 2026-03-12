@@ -41,6 +41,23 @@ export interface Component {
   updatedAt: string;
   prices?: Price[];
   priceHistory?: PriceHistory[];
+  reviews?: Review[];
+}
+
+export interface Review {
+  id: string;
+  componentId: string;
+  userId?: string;
+  user?: {
+    id: string;
+    username: string;
+  };
+  authorName?: string;
+  title?: string;
+  content: string;
+  rating: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Price {

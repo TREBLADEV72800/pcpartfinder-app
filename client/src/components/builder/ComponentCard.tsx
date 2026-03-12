@@ -1,7 +1,6 @@
-import { Component } from "@shared"
+import type { Component } from "@interfaces/component"
 import { Card, CardContent } from "@components/ui/card"
 import { Badge } from "@components/ui/badge"
-import { Button } from "@components/ui/button"
 import { Check, X, AlertTriangle } from "lucide-react"
 import { cn, formatPrice } from "@lib/utils"
 

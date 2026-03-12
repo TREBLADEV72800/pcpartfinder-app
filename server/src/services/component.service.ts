@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma.js";
-import { cacheService } from "../lib/redis.js";
+import { cacheService } from "../services/cache.service.js";
 import type { ComponentCategory } from "@prisma/client";
 
 export interface ComponentFilters {

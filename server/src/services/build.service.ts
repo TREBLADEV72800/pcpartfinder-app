@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma.js";
-import { cacheService } from "../lib/redis.js";
+import { cacheService } from "../services/cache.service.js";
 import type { ComponentCategory, BuildUseCase } from "@prisma/client";
 import { calculateTotalTDP, runAllCompatibilityChecks } from "./compatibility.service.js";
 
@@ -269,7 +269,6 @@ export class BuildService {
       });
 
       // Re-run compatibility checks
-      const componentsData = await this.getComponentsForItems(items);
       await this.runCompatibilityChecks(id, componentsData);
     } else {
       await prisma.build.update({

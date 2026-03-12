@@ -1,8 +1,8 @@
-import { Component } from "@shared"
+import type { Component } from "@interfaces/component"
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card"
 import { WattageDonut } from "@components/charts/WattageDonut"
 import { Zap } from "lucide-react"
-import { cn, calculateTotalTDP } from "@lib/utils"
+// Removed unused imports
 
 interface WattageBreakdownProps {
   components: (Component | undefined)[]

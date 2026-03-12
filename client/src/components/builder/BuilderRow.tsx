@@ -1,4 +1,5 @@
-import { Component, ComponentCategory } from "@shared"
+import type { Component } from "@interfaces/component"
+import { ComponentCategory } from "@shared"
 import { Button } from "@components/ui/button"
 import { Badge } from "@components/ui/badge"
 import { ComponentIcon } from "@components/common/ComponentIcon"
@@ -45,7 +46,7 @@ export function BuilderRow({
   category,
   component,
   customPrice,
-  isOptional,
+  isOptional: _isOptional,
   onSelect,
   onRemove,
   onEditPrice,

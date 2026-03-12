@@ -1,5 +1,5 @@
 import { CheckCircle2, AlertTriangle, XCircle, Info } from "lucide-react"
-import { CompatStatus } from "@types/compatibility"
+import type { CompatStatus } from "@interfaces/compatibility"
 import { cn } from "@lib/utils"
 
 interface CompatibilityIconProps {

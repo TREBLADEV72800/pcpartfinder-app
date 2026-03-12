@@ -1,8 +1,8 @@
-import { Component, Price } from "@shared"
+import type { Component, Price } from "@interfaces/component"
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card"
 import { Badge } from "@components/ui/badge"
 import { Button } from "@components/ui/button"
-import { ExternalLink, Package } from "lucide-react"
+import { ExternalLink } from "lucide-react"
 import { cn } from "@lib/utils"
 
 interface ProductPricesProps {
@@ -50,7 +50,7 @@ export function ProductPrices({ component, onBuyClick, className }: ProductPrice
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {prices.map((price, index) => {
+          {prices.map((price) => {
             const isCheapest = price.price === cheapestPrice.price
             const totalPrice = price.total || price.price
 

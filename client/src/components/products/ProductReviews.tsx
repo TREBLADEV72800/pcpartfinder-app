@@ -1,9 +1,7 @@
-import { Component } from "@shared"
+import type { Component } from "@interfaces/component"
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card"
 import { RatingStars } from "@components/common/RatingStars"
-import { Skeleton } from "@components/ui/skeleton"
 import { User } from "lucide-react"
-import { cn } from "@lib/utils"
 
 interface ProductReviewsProps {
   component: Component

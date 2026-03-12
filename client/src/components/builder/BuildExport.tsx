@@ -1,4 +1,12 @@
-import { Build, ComponentCategory } from "@shared"
+import { ComponentCategory } from "@shared"
+
+interface Build {
+  name: string
+  description?: string
+  useCase?: string
+  totalWattage?: number
+  shareId: string
+}
 import { useState } from "react"
 import {
   Dialog,

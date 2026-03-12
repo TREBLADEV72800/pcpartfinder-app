@@ -1,4 +1,3 @@
-import { Build } from "@shared"
 import { useState } from "react"
 import {
   Dialog,
@@ -14,7 +13,14 @@ import { Label } from "@components/ui/label"
 import { Switch } from "@components/ui/switch"
 import { Badge } from "@components/ui/badge"
 import { Share2, Copy, Check, Twitter, Linkedin } from "lucide-react"
-import { cn } from "@lib/utils"
+
+interface Build {
+  name: string
+  shareId: string
+  isPublic: boolean
+  createdAt: string
+  totalPrice?: number
+}
 
 interface BuildShareDialogProps {
   build: Build
@@ -27,7 +33,7 @@ interface BuildShareDialogProps {
 
 export function BuildShareDialog({
   build,
-  shareUrl,
+  shareUrl: shareUrlProp,
   onCopyLink,
   onTogglePublic,
   trigger,
@@ -36,8 +42,8 @@ export function BuildShareDialog({
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
-    if (shareUrl) {
-      await navigator.clipboard.writeText(shareUrl)
+    if (shareUrlProp) {
+      await navigator.clipboard.writeText(shareUrlProp)
       setCopied(true)
       onCopyLink?.()
       setTimeout(() => setCopied(false), 2000)
@@ -45,20 +51,20 @@ export function BuildShareDialog({
   }
 
   const handleShare = async (platform: "twitter" | "linkedin") => {
-    const url = shareUrl || `${window.location.origin}/builds/${build.shareId}`
+    const url = shareUrlProp || `${window.location.origin}/builds/${build.shareId}`
     const text = `Check out my PC build: ${build.name}`
 
-    let shareUrl = ""
+    let platformShareUrl = ""
     switch (platform) {
       case "twitter":
-        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
+        platformShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
         break
       case "linkedin":
-        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`
+        platformShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`
         break
     }
 
-    window.open(shareUrl, "_blank", "width=600,height=400")
+    window.open(platformShareUrl, "_blank", "width=600,height=400")
   }
 
   return (
@@ -106,7 +112,7 @@ export function BuildShareDialog({
             <div className="flex gap-2">
               <Input
                 id="share-url"
-                value={shareUrl || `${window.location.origin}/builds/${build.shareId}`}
+                value={shareUrlProp || `${window.location.origin}/builds/${build.shareId}`}
                 readOnly
                 className="flex-1"
               />

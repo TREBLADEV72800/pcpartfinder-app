@@ -5,7 +5,7 @@ import { cn } from "@lib/utils"
 interface WattageData {
   name: string
   wattage: number
-  color: string
+  color?: string
 }
 
 interface WattageDonutProps {

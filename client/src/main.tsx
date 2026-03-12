@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
+import { Toaster } from "sonner";
 import App from "./App";
 import "./index.css";
 
@@ -20,6 +21,19 @@ createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <App />
       </BrowserRouter>
+      <Toaster
+        position="top-right"
+        expand={false}
+        richColors
+        closeButton
+        toastOptions={{
+          classNames: {
+            toast: "font-sans",
+            title: "font-semibold",
+            description: "text-sm text-muted-foreground",
+          },
+        }}
+      />
     </QueryClientProvider>
   </StrictMode>
 );

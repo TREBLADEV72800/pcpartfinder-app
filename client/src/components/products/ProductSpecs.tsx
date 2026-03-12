@@ -1,7 +1,7 @@
-import { Component, ComponentCategory } from "@shared"
+import type { Component } from "@interfaces/component"
+import { ComponentCategory } from "@shared"
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card"
 import { Badge } from "@components/ui/badge"
-import { cn } from "@lib/utils"
 
 interface ProductSpecsProps {
   component: Component
@@ -80,7 +80,7 @@ export function ProductSpecs({ component, className }: ProductSpecsProps) {
   // Get all specs for detailed view
   const getAllSpecs = () => {
     return Object.entries(component.specs || {}).filter(
-      ([key, value]) => value !== undefined && value !== null && value !== ""
+      ([, value]) => value !== undefined && value !== null && value !== ""
     )
   }
 
@@ -100,7 +100,7 @@ export function ProductSpecs({ component, className }: ProductSpecsProps) {
               {highlightedSpecs.map((spec) => (
                 <div key={spec.label} className="space-y-1">
                   <p className="text-xs text-muted-foreground">{spec.label}</p>
-                  <p className="font-medium">{spec.value}</p>
+                  <p className="font-medium">{String(spec.value)}</p>
                 </div>
               ))}
             </div>

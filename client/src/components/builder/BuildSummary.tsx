@@ -1,18 +1,18 @@
-import { Component, ComponentCategory } from "@shared"
+import type { Component } from "@interfaces/component"
+import { ComponentCategory } from "@shared"
 import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card"
 import { Badge } from "@components/ui/badge"
 import { Separator } from "@components/ui/separator"
 import { PriceTag } from "@components/common/PriceTag"
 import { ComponentIcon } from "@components/common/ComponentIcon"
 import { Receipt, Zap, CheckCircle2, AlertTriangle } from "lucide-react"
-import { cn, calculateTotalTDP } from "@lib/utils"
+import { calculateTotalTDP } from "@lib/utils"
 
 interface BuildSummaryProps {
   components: Partial<Record<ComponentCategory, Component>>
   customPrices?: Partial<Record<ComponentCategory, number>>
   totalPrice?: number
   totalWattage?: number
-  isCompatible?: boolean
   compatibilityErrors?: number
   compatibilityWarnings?: number
   className?: string
@@ -38,7 +38,6 @@ export function BuildSummary({
   customPrices,
   totalPrice,
   totalWattage,
-  isCompatible = true,
   compatibilityErrors = 0,
   compatibilityWarnings = 0,
   className,

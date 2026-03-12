@@ -1,8 +1,14 @@
 import { useState } from "react";
 import { formatPrice } from "@lib/utils";
 import { useComponents } from "@hooks/useComponents";
-import { X } from "lucide-react";
+import { X, Plus, Scale } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
+// ═════════════════════════════════════════════════════════════
+// ComparePage
+// ═════════════════════════════════════════════════════════════
 export default function ComparePage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -21,52 +27,86 @@ export default function ComparePage() {
     setSelectedIds(selectedIds.filter((i) => i !== id));
   };
 
+  const canAddMore = selectedIds.length < 4;
+
   return (
-    <div className="container px-4 py-8 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Confronta Componenti</h1>
-        <p className="text-muted-foreground">
-          Confronta fino a 4 componenti affiancati
-        </p>
-      </div>
+    <div className="w-full min-h-screen">
+      {/* ── Header ──────────────────────────────────────────── */}
+      <section className="border-b border-border bg-muted/30 py-12">
+        <div className="container px-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <Badge
+                variant="secondary"
+                className="mb-2 inline-flex"
+              >
+                <Scale className="mr-1.5 h-3.5 w-3.5" />
+                Confronto
+              </Badge>
+              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                Confronta{" "}
+                <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
+                  Componenti
+                </span>
+              </h1>
+              <p className="mt-2 text-muted-foreground">
+                Confronta fino a 4 componenti affiancati per trovare quello perfetto
+              </p>
+            </div>
 
-      {/* Add Component */}
-      {selectedIds.length < 4 && (
-        <button
-          onClick={handleAdd}
-          className="mb-6 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          + Aggiungi Componente
-        </button>
-      )}
+            <Button
+              onClick={handleAdd}
+              disabled={!canAddMore}
+              size="lg"
+              className="shrink-0"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {canAddMore ? "Aggiungi Componente" : "Massimo 4 componenti"}
+            </Button>
+          </div>
+        </div>
+      </section>
 
-      {/* Comparison Grid */}
-      {components.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground border-2 border-dashed border-border rounded-lg">
-          <p>Nessun componente selezionato</p>
-          <p className="text-sm mt-2">Aggiungi componenti per confrontarli</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {components.map((component) => (
-            <ComparisonCard
-              key={component.id}
-              component={component}
-              onRemove={() => handleRemove(component.id)}
-            />
-          ))}
-        </div>
-      )}
+      {/* ── Comparison Grid ─────────────────────────────────── */}
+      <section className="py-12">
+        <div className="container px-4">
+          {components.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <>
+              {/* Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {components.map((component) => (
+                  <ComparisonCard
+                    key={component.id}
+                    component={component}
+                    onRemove={() => handleRemove(component.id)}
+                  />
+                ))}
+              </div>
 
-      {/* Specs Comparison Table */}
-      {components.length >= 2 && (
-        <div className="mt-8 border border-border rounded-lg overflow-hidden">
-          <SpecsTable components={components} />
+              {/* Specs Comparison Table */}
+              {components.length >= 2 && (
+                <Card>
+                  <CardContent className="p-6">
+                    <h2 className="text-xl font-semibold mb-6">
+                      Confronto Specifiche
+                    </h2>
+                    <SpecsTable components={components} />
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
         </div>
-      )}
+      </section>
     </div>
   );
 }
+
+// ═════════════════════════════════════════════════════════════
+// Sub-components
+// ═════════════════════════════════════════════════════════════
 
 interface ComparisonCardProps {
   component: {
@@ -84,54 +124,60 @@ function ComparisonCard({ component, onRemove }: ComparisonCardProps) {
   const price = component.prices?.[0];
 
   return (
-    <div className="border border-border rounded-lg bg-card overflow-hidden">
+    <Card className="group overflow-hidden transition-all duration-200 hover:border-primary/40 hover:shadow-lg">
       {/* Header */}
       <div className="p-4 border-b border-border bg-muted/30 flex items-start justify-between">
-        <div>
+        <div className="flex-1 min-w-0">
           <p className="text-sm text-muted-foreground">{component.brand}</p>
           <h3 className="font-semibold line-clamp-2">{component.name}</h3>
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onRemove}
-          className="p-1 hover:bg-accent rounded-md transition-colors"
+          className="shrink-0"
         >
           <X className="h-4 w-4" />
-        </button>
+        </Button>
       </div>
 
       {/* Specs */}
-      <div className="p-4 space-y-2 text-sm">
-        {Object.entries(specs)
-          .slice(0, 6)
-          .map(([key, value]) => (
-            <div key={key} className="flex justify-between">
-              <span className="text-muted-foreground capitalize">
-                {key.replace(/_/g, " ")}:
-              </span>
-              <span className="font-medium">{String(value)}</span>
-            </div>
-          ))}
-      </div>
+      <CardContent className="p-4">
+        <div className="space-y-2 text-sm">
+          {Object.entries(specs)
+            .slice(0, 6)
+            .map(([key, value]) => (
+              <div key={key} className="flex justify-between">
+                <span className="text-muted-foreground capitalize">
+                  {key.replace(/_/g, " ")}:
+                </span>
+                <span className="font-medium truncate ml-2">{String(value)}</span>
+              </div>
+            ))}
+        </div>
+      </CardContent>
 
       {/* Price */}
       <div className="p-4 border-t border-border bg-muted/30">
         {price ? (
           <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-primary">
-              {formatPrice(price.price)}
-            </span>
-            <span className="text-xs text-muted-foreground">{price.retailer}</span>
+            <div>
+              <span className="text-lg font-bold text-primary">
+                {formatPrice(price.price)}
+              </span>
+              <p className="text-xs text-muted-foreground">{price.retailer}</p>
+            </div>
           </div>
         ) : (
           <span className="text-muted-foreground">Prezzo N/A</span>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
 
 interface SpecsTableProps {
-  components: Array<{ id: string; specs: Record<string, unknown> }>;
+  components: Array<{ id: string; specs: Record<string, unknown>; name: string; brand: string }>;
 }
 
 function SpecsTable({ components }: SpecsTableProps) {
@@ -140,34 +186,62 @@ function SpecsTable({ components }: SpecsTableProps) {
     new Set(
       components.flatMap((c) => Object.keys(c.specs))
     )
-  ).slice(0, 10); // Limit to 10 specs
+  ).slice(0, 12); // Limit to 12 specs
 
   return (
-    <table className="w-full">
-      <thead className="bg-muted">
-        <tr>
-          <th className="px-4 py-3 text-left font-semibold">Specifiche</th>
-          {components.map((c, idx) => (
-            <th key={c.id || idx} className="px-4 py-3 text-left font-semibold">
-              {String(c.specs.brand || "")} {String(c.specs.model || "")}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {allKeys.map((key) => (
-          <tr key={key} className="border-t border-border">
-            <td className="px-4 py-3 text-muted-foreground capitalize">
-              {key.replace(/_/g, " ")}
-            </td>
-            {components.map((c, idx) => (
-              <td key={c.id || idx} className="px-4 py-3">
-                {String(c.specs[key] || "—")}
-              </td>
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead className="bg-muted/50">
+          <tr>
+            <th className="px-4 py-3 text-left font-semibold">Specifiche</th>
+            {components.map((c) => (
+              <th key={c.id} className="px-4 py-3 text-left font-semibold min-w-[150px]">
+                {c.brand}
+              </th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {allKeys.map((key, idx) => (
+            <tr
+              key={key}
+              className={idx % 2 === 0 ? "bg-background" : "bg-muted/20"}
+            >
+              <td className="px-4 py-3 text-muted-foreground capitalize font-medium">
+                {key.replace(/_/g, " ")}
+              </td>
+              {components.map((c) => (
+                <td
+                  key={c.id}
+                  className="px-4 py-3"
+                >
+                  {String(c.specs[key] || "—")}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20">
+      <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+        <Scale className="h-10 w-10 text-primary" />
+      </div>
+      <h2 className="text-2xl font-bold mb-2">
+        Nessun componente selezionato
+      </h2>
+      <p className="text-muted-foreground mb-6">
+        Aggiungi componenti per confrontarli affiancati
+      </p>
+      <Button>
+        <Plus className="h-4 w-4 mr-2" />
+        Aggiungi Componente
+      </Button>
+    </div>
   );
 }

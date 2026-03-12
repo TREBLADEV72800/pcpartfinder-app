@@ -1,4 +1,4 @@
-import { Component } from "@shared"
+import type { Component } from "@interfaces/component"
 import { ProductRow } from "./ProductRow"
 import { EmptyState } from "@components/common/EmptyState"
 import { LoadingSpinner } from "@components/common/LoadingSpinner"

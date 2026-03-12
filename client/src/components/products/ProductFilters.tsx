@@ -8,7 +8,6 @@ import { Checkbox } from "@components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components/ui/select"
 import { RecentFilter } from "@components/common/RecentFilter"
 import { X, Filter } from "lucide-react"
-import { cn } from "@lib/utils"
 
 export interface ProductFiltersState {
   search: string
