@@ -2,7 +2,6 @@ import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
 import {
   ArrowLeft,
-  ExternalLink,
   TrendingDown,
   TrendingUp,
   Minus,

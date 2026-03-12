@@ -2,21 +2,19 @@ import { useState, useCallback } from "react";
 import { Cpu, Wrench, Zap, Euro, Save, Share2, Download, Trash2 } from "lucide-react";
 import { useBuildStore } from "@stores/useBuildStore";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import BuilderTable from "@components/builder/BuilderTable";
 import CompatibilityBanner from "@components/builder/CompatibilityBanner";
 import BuildActions from "@components/builder/BuildActions";
 import ComponentPicker from "@components/builder/ComponentPicker";
-import { Component, ComponentCategory } from "@interfaces/component";
+import type { Component, ComponentCategory } from "@interfaces/component";
 import { useComponents } from "@hooks/useComponents";
 
 // ═════════════════════════════════════════════════════════════
 // BuilderPage
 // ═════════════════════════════════════════════════════════════
 export default function BuilderPage() {
-  const { setSlot, slots, clearBuild, getTotalPrice, getTotalWattage, name } = useBuildStore();
+  const { setSlot, slots, clearBuild, getTotalPrice, getTotalWattage } = useBuildStore();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ComponentCategory | null>(null);
 

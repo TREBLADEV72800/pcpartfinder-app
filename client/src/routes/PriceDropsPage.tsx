@@ -1,6 +1,6 @@
 import { formatPrice } from "@lib/utils";
 import { useComponents } from "@hooks/useComponents";
-import { TrendingDown, Activity, Calendar } from "lucide-react";
+import { TrendingDown, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

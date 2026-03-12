@@ -1,19 +1,16 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useState, useMemo } from "react";
 import {
-  SlidersHorizontal,
   ArrowUpDown,
-  ChevronDown,
   Filter,
   Package,
   ShoppingCart,
 } from "lucide-react";
 import { useComponents } from "@hooks/useComponents";
-import { CATEGORIES, type CategoryMetadata } from "@shared";
+import { CATEGORIES } from "@shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -385,7 +382,8 @@ function FilterPanel({
           </Button>
         )}
       </div>
-    </div  );
+    </div>
+  );
 }
 
 function LoadingState() {
